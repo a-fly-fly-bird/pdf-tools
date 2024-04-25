@@ -1,1 +1,18 @@
-split
+<div class="pdf-split-container p-4 shadow-lg rounded-lg">
+  <input type="file" (change)="onFileSelected($event)" accept="application/pdf" class="mb-4" />
+  <div *ngIf="pdfSrc" class="mb-4">
+    <!-- 使用 embed 标签展示上传的PDF -->
+    <embed [src]="pdfSrc" type="application/pdf" class="w-full h-96">
+  </div>
+  <div class="pdf-split-controls space-x-4">
+    <label for="fromPage" class="font-bold">从页面:</label>
+    <input type="number" [(ngModel)]="fromPage" name="fromPage" class="border p-1 rounded">
+
+    <label for="toPage" class="font-bold">到页面:</label>
+    <input type="number" [(ngModel)]="toPage" name="toPage" class="border p-1 rounded">
+
+    <button (click)="splitPDF()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Split PDF
+    </button>
+  </div>
+</div>
