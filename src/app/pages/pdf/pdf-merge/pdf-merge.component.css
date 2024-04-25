@@ -1,3 +1,8 @@
 :host {
   display: block;
 }
+
+embed {
+  border: 1px solid black;
+  /* Optional: adds a border around the embed */
+}

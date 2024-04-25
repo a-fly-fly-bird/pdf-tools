@@ -1,18 +1,9 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-} from '@angular/core';
-import {
-  NgxUploaderModule,
-  UploadFile,
-  UploadInput,
-  UploadOutput,
-  UploadStatus,
-  UploaderOptions,
-  humanizeBytes,
-} from 'ngx-uploader';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { NgxUploaderModule } from 'ngx-uploader';
+import { PDFDocument } from 'pdf-lib';
 
 @Component({
   selector: 'app-pdf-merge',
@@ -23,87 +14,50 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class PdfMergeComponent {
-  url = '/upload';
-  formData!: FormData;
-  files: UploadFile[];
-  uploadInput: EventEmitter<UploadInput>;
-  humanizeBytes: Function;
-  dragOver!: boolean;
-  options: UploaderOptions;
+  faFilePdf = faFilePdf;
+  selectedFiles: File[] = [];
+  safePdfUrl: SafeResourceUrl | null = null;
 
-  constructor() {
-    this.options = { concurrency: 1, maxUploads: 10 };
-    this.files = [];
-    this.uploadInput = new EventEmitter<UploadInput>();
-    this.humanizeBytes = humanizeBytes;
+  constructor(private sanitizer: DomSanitizer) {}
+
+  async onFileSelected(event: any) {
+    const files: FileList = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+      this.selectedFiles.push(files.item(i)!);
+    }
   }
 
-  onUploadOutput(output: UploadOutput): void {
-    if (output.type === 'allAddedToQueue') {
-      const event: UploadInput = {
-        type: 'uploadAll',
-        url: this.url,
-        method: 'POST',
-        data: { foo: 'bar' },
-      };
+  async mergePdfs() {
+    const mergedPdf = await PDFDocument.create();
 
-      this.uploadInput.emit(event);
-    } else if (
-      output.type === 'addedToQueue' &&
-      typeof output.file !== 'undefined'
-    ) {
-      this.files.push(output.file);
-    } else if (
-      output.type === 'uploading' &&
-      typeof output.file !== 'undefined'
-    ) {
-      const index = this.files.findIndex(
-        (file) =>
-          typeof output.file !== 'undefined' && file.id === output.file.id,
-      );
-      this.files[index] = output.file;
-    } else if (output.type === 'cancelled' || output.type === 'removed') {
-      this.files = this.files.filter(
-        (file: UploadFile) => file !== output.file,
-      );
-    } else if (output.type === 'dragOver') {
-      this.dragOver = true;
-    } else if (output.type === 'dragOut') {
-      this.dragOver = false;
-    } else if (output.type === 'drop') {
-      this.dragOver = false;
-    } else if (
-      output.type === 'rejected' &&
-      typeof output.file !== 'undefined'
-    ) {
-      console.log(output.file.name + ' rejected');
+    for (const file of this.selectedFiles) {
+      const pdfBytes = await file.arrayBuffer();
+      const pdf = await PDFDocument.load(pdfBytes);
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
 
-    this.files = this.files.filter(
-      (file) => file.progress.status !== UploadStatus.Done,
+    const mergedPdfFile = await mergedPdf.save();
+    await this.displayPdf(mergedPdfFile);
+
+    this.downloadBlob(
+      new Blob([mergedPdfFile], { type: 'application/pdf' }),
+      'merged.pdf',
     );
   }
 
-  startUpload(): void {
-    const event: UploadInput = {
-      type: 'uploadAll',
-      url: this.url,
-      method: 'POST',
-      data: { foo: 'bar' },
-    };
-
-    this.uploadInput.emit(event);
+  downloadBlob(blob: Blob, filename: string) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
-  cancelUpload(id: string): void {
-    this.uploadInput.emit({ type: 'cancel', id: id });
-  }
-
-  removeFile(id: string): void {
-    this.uploadInput.emit({ type: 'remove', id: id });
-  }
-
-  removeAllFiles(): void {
-    this.uploadInput.emit({ type: 'removeAll' });
+  private async displayPdf(pdfBytes: Uint8Array) {
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    const unsafeUrl = URL.createObjectURL(blob);
+    this.safePdfUrl =
+      await this.sanitizer.bypassSecurityTrustResourceUrl(unsafeUrl);
   }
 }
