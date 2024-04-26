@@ -1,5 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  SecurityContext,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PDFDocument } from 'pdf-lib';
@@ -17,7 +22,10 @@ export default class PdfSplitComponent {
   fromPage: number = 1;
   toPage: number = 1;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   async onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -27,11 +35,20 @@ export default class PdfSplitComponent {
       const unsafeUrl = URL.createObjectURL(blob);
       // 使用DomSanitizer将URL标记为安全的
       this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(unsafeUrl);
+      this.cdr.detectChanges();
     }
   }
 
   async splitPDF() {
-    const existingPdfBytes = await fetch(this.pdfSrc as string).then((res) =>
+    const pdfUrl = this.sanitizer.sanitize(
+      SecurityContext.RESOURCE_URL,
+      this.pdfSrc,
+    );
+    if (!pdfUrl) {
+      return;
+    }
+
+    const existingPdfBytes = await fetch(pdfUrl).then((res) =>
       res.arrayBuffer(),
     );
     const pdfDoc = await PDFDocument.load(existingPdfBytes);

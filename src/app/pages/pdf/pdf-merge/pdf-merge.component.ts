@@ -1,5 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+} from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faFilePdf } from '@fortawesome/free-solid-svg-icons';
@@ -20,7 +24,10 @@ export default class PdfMergeComponent {
   safePdfUrl: SafeResourceUrl | null = null;
   mergedBlob: Blob | null = null;
 
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(
+    private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   async onFileSelected(event: any) {
     this.selectedFiles = Array.from(event.target.files);
@@ -43,6 +50,7 @@ export default class PdfMergeComponent {
     const blob = new Blob([pdfBytes], { type: 'application/pdf' });
     const unsafeUrl = URL.createObjectURL(blob);
     this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(unsafeUrl);
+    this.cdr.detectChanges();
   }
 
   downloadBlob(blob: Blob, filename: string) {
