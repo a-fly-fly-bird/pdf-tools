@@ -16,4 +16,8 @@ export const routes: Routes = [
     path: 'pdf',
     loadChildren: () => import('./pages/pdf/pdf.routes'),
   },
+  {
+    path: 'video',
+    loadChildren: () => import('./pages/video/video.routes'),
+  },
 ];

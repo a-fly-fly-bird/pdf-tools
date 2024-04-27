@@ -1,0 +1,19 @@
+<!-- video-edit.component.html -->
+<div class="video-edit-container">
+  <div class="video-input">
+    <input type="file" (change)="onVideoSelect($event)" accept="video/*" class="input input-bordered" />
+  </div>
+  <div class="video-output">
+    <ng-container *ngIf="videoUrl">
+      <video #videoPlayer controls [src]="videoUrl" class="video-player"></video>
+    </ng-container>
+    <ng-container *ngIf="outputUrl">
+      <h3>Processed Video:</h3>
+      <video controls [src]="outputUrl" class="video-player"></video>
+    </ng-container>
+  </div>
+  <div class="video-controls">
+    <button class="btn btn-primary" (click)="trimVideo()">裁剪视频</button>
+    <button class="btn btn-secondary" (click)="mergeVideos()">合并视频</button>
+  </div>
+</div>

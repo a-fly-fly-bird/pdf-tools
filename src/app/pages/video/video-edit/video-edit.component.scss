@@ -1,0 +1,56 @@
+/* video-edit.component.css */
+.video-edit-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+
+.video-input {
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 256px;
+}
+
+.video-output {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video-player {
+  max-width: 75%; /* Limiting video player to 3/4 of the container width */
+  height: auto;
+}
+
+.video-controls {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* Media query for portrait orientation */
+@media (orientation: portrait) {
+  .video-edit-container {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+
+  .video-output {
+    flex: 1;
+    align-items: flex-start; /* Align video to the left */
+  }
+
+  .video-controls {
+    flex-direction: column;
+    justify-content: center; /* Centering controls vertically */
+  }
+}
+
+/* Ensure buttons and inputs are full width in portrait mode */
+@media (max-width: 600px) {
+  .btn, .input {
+    width: 100%;
+  }
+}
