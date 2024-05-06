@@ -20,4 +20,8 @@ export const routes: Routes = [
     path: 'video',
     loadChildren: () => import('./pages/video/video.routes'),
   },
+  {
+    path: 'picture',
+    loadChildren: () => import('./pages/picture/picture.routes'),
+  },
 ];
