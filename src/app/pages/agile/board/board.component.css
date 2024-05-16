@@ -1,0 +1,27 @@
+.board {
+  display: flex;
+  flex-direction: column;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  margin: 0 10px;
+}
+
+.step-number {
+  font-size: 24px;
+  color: blue;
+}
+
+.board-column {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  padding: 20px;
+}

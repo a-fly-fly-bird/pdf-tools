@@ -24,4 +24,8 @@ export const routes: Routes = [
     path: 'picture',
     loadChildren: () => import('./pages/picture/picture.routes'),
   },
+  {
+    path: 'agile',
+    loadComponent: () => import('./pages/agile/agile/agile.component'),
+  },
 ];
